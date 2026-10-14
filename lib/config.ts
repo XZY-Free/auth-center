@@ -32,3 +32,21 @@ export const serverConfig = {
     return Number.parseInt(process.env.AUTH_CENTER_PORT ?? "3100", 10);
   },
 } as const;
+
+export const consumerConfig = {
+  /**
+   * 允许的回跳/来源地址名单（逗号分隔）。
+   * 每一项是 http(s) origin（如 `http://localhost:3000`）或自定义 scheme
+   * （如桌面深链 `nexharness:`）。用于：
+   * - 登录回跳目标校验（returnTo 防开放重定向）；
+   * - 认证接口的同源放行（开发期反向代理 host 差异）。
+   */
+  get allowedOrigins(): ReadonlySet<string> {
+    return new Set(
+      (process.env.AUTH_CENTER_ALLOWED_ORIGINS ?? "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
+    );
+  },
+} as const;

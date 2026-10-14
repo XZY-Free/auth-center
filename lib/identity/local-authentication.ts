@@ -543,7 +543,8 @@ function parsePasswordRecord(encoded: string): PasswordRecord | null {
   };
 }
 
-function hashSessionToken(token: string): string {
+/** 会话 token 的稳定哈希（auth_session.token_hash 唯一权威口径）。 */
+export function hashSessionToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
