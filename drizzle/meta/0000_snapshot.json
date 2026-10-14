@@ -1,0 +1,2318 @@
+{
+  "version": "5",
+  "dialect": "mysql",
+  "id": "ba6eddf2-105c-46f0-9f47-b3f9e8d92c1d",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "AuthSession": {
+      "name": "AuthSession",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userIdentityId": {
+          "name": "userIdentityId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tokenHash": {
+          "name": "tokenHash",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sessionKind": {
+          "name": "sessionKind",
+          "type": "enum('authenticated','password_enrollment')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'authenticated'"
+        },
+        "expiresAt": {
+          "name": "expiresAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revokedAt": {
+          "name": "revokedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "AuthSession_token_uq": {
+          "name": "AuthSession_token_uq",
+          "columns": [
+            "tokenHash"
+          ],
+          "isUnique": true
+        },
+        "AuthSession_user_expiry_idx": {
+          "name": "AuthSession_user_expiry_idx",
+          "columns": [
+            "tenantId",
+            "userIdentityId",
+            "expiresAt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "AuthSession_tenantId_Tenant_id_fk": {
+          "name": "AuthSession_tenantId_Tenant_id_fk",
+          "tableFrom": "AuthSession",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "AuthSession_userIdentityId_UserIdentity_id_fk": {
+          "name": "AuthSession_userIdentityId_UserIdentity_id_fk",
+          "tableFrom": "AuthSession",
+          "tableTo": "UserIdentity",
+          "columnsFrom": [
+            "userIdentityId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "AuthSession_id": {
+          "name": "AuthSession_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "EnterpriseProfileSyncState": {
+      "name": "EnterpriseProfileSyncState",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userIdentityId": {
+          "name": "userIdentityId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "profileFingerprint": {
+          "name": "profileFingerprint",
+          "type": "varchar(72)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lastVerifiedAt": {
+          "name": "lastVerifiedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "freshUntil": {
+          "name": "freshUntil",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "staleUntil": {
+          "name": "staleUntil",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lastSyncErrorCode": {
+          "name": "lastSyncErrorCode",
+          "type": "varchar(96)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sourceSystem": {
+          "name": "sourceSystem",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "EnterpriseProfileSyncState_user_uq": {
+          "name": "EnterpriseProfileSyncState_user_uq",
+          "columns": [
+            "userIdentityId"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "EnterpriseProfileSyncState_userIdentityId_UserIdentity_id_fk": {
+          "name": "EnterpriseProfileSyncState_userIdentityId_UserIdentity_id_fk",
+          "tableFrom": "EnterpriseProfileSyncState",
+          "tableTo": "UserIdentity",
+          "columnsFrom": [
+            "userIdentityId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "EnterpriseProfileSyncState_id": {
+          "name": "EnterpriseProfileSyncState_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "LocalCredential": {
+      "name": "LocalCredential",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userIdentityId": {
+          "name": "userIdentityId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "normalizedAccount": {
+          "name": "normalizedAccount",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "passwordHash": {
+          "name": "passwordHash",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "failedLoginCount": {
+          "name": "failedLoginCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "lockedUntil": {
+          "name": "lockedUntil",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "passwordChangedAt": {
+          "name": "passwordChangedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "LocalCredential_tenant_account_uq": {
+          "name": "LocalCredential_tenant_account_uq",
+          "columns": [
+            "tenantId",
+            "normalizedAccount"
+          ],
+          "isUnique": true
+        },
+        "LocalCredential_user_uq": {
+          "name": "LocalCredential_user_uq",
+          "columns": [
+            "userIdentityId"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "LocalCredential_tenantId_Tenant_id_fk": {
+          "name": "LocalCredential_tenantId_Tenant_id_fk",
+          "tableFrom": "LocalCredential",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "LocalCredential_userIdentityId_UserIdentity_id_fk": {
+          "name": "LocalCredential_userIdentityId_UserIdentity_id_fk",
+          "tableFrom": "LocalCredential",
+          "tableTo": "UserIdentity",
+          "columnsFrom": [
+            "userIdentityId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "LocalCredential_id": {
+          "name": "LocalCredential_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "PrincipalBinding": {
+      "name": "PrincipalBinding",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subjectType": {
+          "name": "subjectType",
+          "type": "enum('user','group','role','department')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "externalId": {
+          "name": "externalId",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "displayName": {
+          "name": "displayName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "userIdentityId": {
+          "name": "userIdentityId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "PrincipalBinding_tenant_type_external_uq": {
+          "name": "PrincipalBinding_tenant_type_external_uq",
+          "columns": [
+            "tenantId",
+            "subjectType",
+            "externalId"
+          ],
+          "isUnique": true
+        },
+        "PrincipalBinding_tenant_user_idx": {
+          "name": "PrincipalBinding_tenant_user_idx",
+          "columns": [
+            "tenantId",
+            "userIdentityId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "PrincipalBinding_tenantId_Tenant_id_fk": {
+          "name": "PrincipalBinding_tenantId_Tenant_id_fk",
+          "tableFrom": "PrincipalBinding",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "PrincipalBinding_userIdentityId_UserIdentity_id_fk": {
+          "name": "PrincipalBinding_userIdentityId_UserIdentity_id_fk",
+          "tableFrom": "PrincipalBinding",
+          "tableTo": "UserIdentity",
+          "columnsFrom": [
+            "userIdentityId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PrincipalBinding_id": {
+          "name": "PrincipalBinding_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Tenant": {
+      "name": "Tenant",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "key": {
+          "name": "key",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('active','suspended')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'active'"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "Tenant_key_uq": {
+          "name": "Tenant_key_uq",
+          "columns": [
+            "key"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "Tenant_id": {
+          "name": "Tenant_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "UserExtensionAttribute": {
+      "name": "UserExtensionAttribute",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userIdentityId": {
+          "name": "userIdentityId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "attributeKey": {
+          "name": "attributeKey",
+          "type": "varchar(96)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valueType": {
+          "name": "valueType",
+          "type": "enum('string','number','boolean','json')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stringValue": {
+          "name": "stringValue",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "numberValue": {
+          "name": "numberValue",
+          "type": "decimal(30,10)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "booleanValue": {
+          "name": "booleanValue",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "jsonValue": {
+          "name": "jsonValue",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sourceSystem": {
+          "name": "sourceSystem",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "UserExtensionAttribute_user_key_uq": {
+          "name": "UserExtensionAttribute_user_key_uq",
+          "columns": [
+            "userIdentityId",
+            "attributeKey"
+          ],
+          "isUnique": true
+        },
+        "UserExtensionAttribute_user_idx": {
+          "name": "UserExtensionAttribute_user_idx",
+          "columns": [
+            "userIdentityId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "UserExtensionAttribute_userIdentityId_UserIdentity_id_fk": {
+          "name": "UserExtensionAttribute_userIdentityId_UserIdentity_id_fk",
+          "tableFrom": "UserExtensionAttribute",
+          "tableTo": "UserIdentity",
+          "columnsFrom": [
+            "userIdentityId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "UserExtensionAttribute_id": {
+          "name": "UserExtensionAttribute_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {
+        "UserExtensionAttribute_value_slot_ck": {
+          "name": "UserExtensionAttribute_value_slot_ck",
+          "value": "(\n        (valueType = 'string' AND stringValue IS NOT NULL AND numberValue IS NULL AND booleanValue IS NULL AND jsonValue IS NULL)\n        OR (valueType = 'number' AND stringValue IS NULL AND numberValue IS NOT NULL AND booleanValue IS NULL AND jsonValue IS NULL)\n        OR (valueType = 'boolean' AND stringValue IS NULL AND numberValue IS NULL AND booleanValue IS NOT NULL AND jsonValue IS NULL)\n        OR (valueType = 'json' AND stringValue IS NULL AND numberValue IS NULL AND booleanValue IS NULL AND jsonValue IS NOT NULL)\n      )"
+        }
+      }
+    },
+    "UserIdentity": {
+      "name": "UserIdentity",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "externalSubject": {
+          "name": "externalSubject",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "loginAccount": {
+          "name": "loginAccount",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "displayName": {
+          "name": "displayName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('active','disabled')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'active'"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "UserIdentity_tenant_subject_uq": {
+          "name": "UserIdentity_tenant_subject_uq",
+          "columns": [
+            "tenantId",
+            "externalSubject"
+          ],
+          "isUnique": true
+        },
+        "UserIdentity_tenant_email_idx": {
+          "name": "UserIdentity_tenant_email_idx",
+          "columns": [
+            "tenantId",
+            "email"
+          ],
+          "isUnique": false
+        },
+        "UserIdentity_tenant_account_uq": {
+          "name": "UserIdentity_tenant_account_uq",
+          "columns": [
+            "tenantId",
+            "loginAccount"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "UserIdentity_tenantId_Tenant_id_fk": {
+          "name": "UserIdentity_tenantId_Tenant_id_fk",
+          "tableFrom": "UserIdentity",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "UserIdentity_id": {
+          "name": "UserIdentity_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "PermissionGroup": {
+      "name": "PermissionGroup",
+      "columns": {
+        "principalId": {
+          "name": "principalId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source": {
+          "name": "source",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'local'"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "PermissionGroup_principalId_PrincipalBinding_id_fk": {
+          "name": "PermissionGroup_principalId_PrincipalBinding_id_fk",
+          "tableFrom": "PermissionGroup",
+          "tableTo": "PrincipalBinding",
+          "columnsFrom": [
+            "principalId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "PermissionGroup_tenantId_Tenant_id_fk": {
+          "name": "PermissionGroup_tenantId_Tenant_id_fk",
+          "tableFrom": "PermissionGroup",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PermissionGroup_principalId": {
+          "name": "PermissionGroup_principalId",
+          "columns": [
+            "principalId"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "PermissionGroupMember": {
+      "name": "PermissionGroupMember",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "groupId": {
+          "name": "groupId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "validUntil": {
+          "name": "validUntil",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "PermissionGroupMember_uq": {
+          "name": "PermissionGroupMember_uq",
+          "columns": [
+            "tenantId",
+            "groupId",
+            "userId"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "PermissionGroupMember_tenantId_Tenant_id_fk": {
+          "name": "PermissionGroupMember_tenantId_Tenant_id_fk",
+          "tableFrom": "PermissionGroupMember",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "PermissionGroupMember_groupId_PermissionGroup_principalId_fk": {
+          "name": "PermissionGroupMember_groupId_PermissionGroup_principalId_fk",
+          "tableFrom": "PermissionGroupMember",
+          "tableTo": "PermissionGroup",
+          "columnsFrom": [
+            "groupId"
+          ],
+          "columnsTo": [
+            "principalId"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PermissionGroupMember_id": {
+          "name": "PermissionGroupMember_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "PermissionRole": {
+      "name": "PermissionRole",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "permissions": {
+          "name": "permissions",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        }
+      },
+      "indexes": {
+        "PermissionRole_tenant_name_uq": {
+          "name": "PermissionRole_tenant_name_uq",
+          "columns": [
+            "tenantId",
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "PermissionRole_tenantId_Tenant_id_fk": {
+          "name": "PermissionRole_tenantId_Tenant_id_fk",
+          "tableFrom": "PermissionRole",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PermissionRole_id": {
+          "name": "PermissionRole_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "PermissionRoleAssignment": {
+      "name": "PermissionRoleAssignment",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "principalId": {
+          "name": "principalId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "roleKey": {
+          "name": "roleKey",
+          "type": "varchar(96)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source": {
+          "name": "source",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'local'"
+        }
+      },
+      "indexes": {
+        "PermissionRoleAssignment_uq": {
+          "name": "PermissionRoleAssignment_uq",
+          "columns": [
+            "tenantId",
+            "principalId",
+            "roleKey",
+            "source"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "PermissionRoleAssignment_tenantId_Tenant_id_fk": {
+          "name": "PermissionRoleAssignment_tenantId_Tenant_id_fk",
+          "tableFrom": "PermissionRoleAssignment",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "PermissionRoleAssignment_principalId_PrincipalBinding_id_fk": {
+          "name": "PermissionRoleAssignment_principalId_PrincipalBinding_id_fk",
+          "tableFrom": "PermissionRoleAssignment",
+          "tableTo": "PrincipalBinding",
+          "columnsFrom": [
+            "principalId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PermissionRoleAssignment_id": {
+          "name": "PermissionRoleAssignment_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "ResourceAccessPolicy": {
+      "name": "ResourceAccessPolicy",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resourceType": {
+          "name": "resourceType",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resourceId": {
+          "name": "resourceId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mode": {
+          "name": "mode",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'inherit'"
+        },
+        "principals": {
+          "name": "principals",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "collaborators": {
+          "name": "collaborators",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        }
+      },
+      "indexes": {
+        "ResourceAccessPolicy_resource_uq": {
+          "name": "ResourceAccessPolicy_resource_uq",
+          "columns": [
+            "tenantId",
+            "resourceType",
+            "resourceId"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "ResourceAccessPolicy_tenantId_Tenant_id_fk": {
+          "name": "ResourceAccessPolicy_tenantId_Tenant_id_fk",
+          "tableFrom": "ResourceAccessPolicy",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "ResourceAccessPolicy_id": {
+          "name": "ResourceAccessPolicy_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "RoleActionBinding": {
+      "name": "RoleActionBinding",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "principalBindingId": {
+          "name": "principalBindingId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actionCode": {
+          "name": "actionCode",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resourceScopeJson": {
+          "name": "resourceScopeJson",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "validFrom": {
+          "name": "validFrom",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "validUntil": {
+          "name": "validUntil",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "RoleActionBinding_tenant_principal_idx": {
+          "name": "RoleActionBinding_tenant_principal_idx",
+          "columns": [
+            "tenantId",
+            "principalBindingId"
+          ],
+          "isUnique": false
+        },
+        "RoleActionBinding_tenant_action_idx": {
+          "name": "RoleActionBinding_tenant_action_idx",
+          "columns": [
+            "tenantId",
+            "actionCode"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "RoleActionBinding_tenantId_Tenant_id_fk": {
+          "name": "RoleActionBinding_tenantId_Tenant_id_fk",
+          "tableFrom": "RoleActionBinding",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "RoleActionBinding_principalBindingId_PrincipalBinding_id_fk": {
+          "name": "RoleActionBinding_principalBindingId_PrincipalBinding_id_fk",
+          "tableFrom": "RoleActionBinding",
+          "tableTo": "PrincipalBinding",
+          "columnsFrom": [
+            "principalBindingId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "RoleActionBinding_id": {
+          "name": "RoleActionBinding_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "DeletionRequest": {
+      "name": "DeletionRequest",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subjectType": {
+          "name": "subjectType",
+          "type": "enum('thread','memory_entry','artifact','user','retention_scope','user_data_export_scope')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subjectId": {
+          "name": "subjectId",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deleteMode": {
+          "name": "deleteMode",
+          "type": "enum('standard','privacy_request','retention_expiry')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reasonCode": {
+          "name": "reasonCode",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "policyRevisionId": {
+          "name": "policyRevisionId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "requestedBy": {
+          "name": "requestedBy",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "requestPrincipalKind": {
+          "name": "requestPrincipalKind",
+          "type": "enum('user','service')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'user'"
+        },
+        "requestState": {
+          "name": "requestState",
+          "type": "enum('planning','blocked_by_hold','deleting','completed','partial','failed','cancelled')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'planning'"
+        },
+        "blockedReasonCodes": {
+          "name": "blockedReasonCodes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "auditEventId": {
+          "name": "auditEventId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "acceptedAt": {
+          "name": "acceptedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "completedAt": {
+          "name": "completedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "DeletionRequest_tenant_subject_idx": {
+          "name": "DeletionRequest_tenant_subject_idx",
+          "columns": [
+            "tenantId",
+            "subjectType",
+            "subjectId"
+          ],
+          "isUnique": false
+        },
+        "DeletionRequest_tenant_state_idx": {
+          "name": "DeletionRequest_tenant_state_idx",
+          "columns": [
+            "tenantId",
+            "requestState"
+          ],
+          "isUnique": false
+        },
+        "DeletionRequest_tenant_requested_by_idx": {
+          "name": "DeletionRequest_tenant_requested_by_idx",
+          "columns": [
+            "tenantId",
+            "requestedBy"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "DeletionRequest_tenantId_Tenant_id_fk": {
+          "name": "DeletionRequest_tenantId_Tenant_id_fk",
+          "tableFrom": "DeletionRequest",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "DeletionRequest_id": {
+          "name": "DeletionRequest_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "DeletionStep": {
+      "name": "DeletionStep",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "requestId": {
+          "name": "requestId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "storeType": {
+          "name": "storeType",
+          "type": "enum('mysql','object_storage','vector_search','trace_log','cache')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subjectRef": {
+          "name": "subjectRef",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stepState": {
+          "name": "stepState",
+          "type": "enum('pending','running','completed','failed','blocked','retained','skipped')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "evidenceRef": {
+          "name": "evidenceRef",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "failureReason": {
+          "name": "failureReason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "attemptCount": {
+          "name": "attemptCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "completedAt": {
+          "name": "completedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "DeletionStep_request_store_subject_uq": {
+          "name": "DeletionStep_request_store_subject_uq",
+          "columns": [
+            "requestId",
+            "storeType",
+            "subjectRef"
+          ],
+          "isUnique": true
+        },
+        "DeletionStep_tenant_request_idx": {
+          "name": "DeletionStep_tenant_request_idx",
+          "columns": [
+            "tenantId",
+            "requestId"
+          ],
+          "isUnique": false
+        },
+        "DeletionStep_request_state_idx": {
+          "name": "DeletionStep_request_state_idx",
+          "columns": [
+            "requestId",
+            "stepState"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "DeletionStep_tenantId_Tenant_id_fk": {
+          "name": "DeletionStep_tenantId_Tenant_id_fk",
+          "tableFrom": "DeletionStep",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "DeletionStep_requestId_DeletionRequest_id_fk": {
+          "name": "DeletionStep_requestId_DeletionRequest_id_fk",
+          "tableFrom": "DeletionStep",
+          "tableTo": "DeletionRequest",
+          "columnsFrom": [
+            "requestId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "DeletionStep_id": {
+          "name": "DeletionStep_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "LegalHold": {
+      "name": "LegalHold",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "targetType": {
+          "name": "targetType",
+          "type": "enum('tenant','thread','invocation','job','artifact','agent_revision')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "targetId": {
+          "name": "targetId",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "holdState": {
+          "name": "holdState",
+          "type": "enum('active','released')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'active'"
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdBy": {
+          "name": "createdBy",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approvedBy": {
+          "name": "approvedBy",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "validUntil": {
+          "name": "validUntil",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "releasedAt": {
+          "name": "releasedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "releasedBy": {
+          "name": "releasedBy",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "releaseReason": {
+          "name": "releaseReason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "LegalHold_tenant_target_uq": {
+          "name": "LegalHold_tenant_target_uq",
+          "columns": [
+            "tenantId",
+            "targetType",
+            "targetId"
+          ],
+          "isUnique": true
+        },
+        "LegalHold_tenant_state_idx": {
+          "name": "LegalHold_tenant_state_idx",
+          "columns": [
+            "tenantId",
+            "holdState"
+          ],
+          "isUnique": false
+        },
+        "LegalHold_valid_until_idx": {
+          "name": "LegalHold_valid_until_idx",
+          "columns": [
+            "validUntil"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "LegalHold_tenantId_Tenant_id_fk": {
+          "name": "LegalHold_tenantId_Tenant_id_fk",
+          "tableFrom": "LegalHold",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "LegalHold_id": {
+          "name": "LegalHold_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "RetentionPolicy": {
+      "name": "RetentionPolicy",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "objectType": {
+          "name": "objectType",
+          "type": "enum('thread','event','trace','audit','artifact','memory','knowledge','job','security_log')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "retentionDays": {
+          "name": "retentionDays",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "legalHoldDays": {
+          "name": "legalHoldDays",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "dataClass": {
+          "name": "dataClass",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "statutoryRequirements": {
+          "name": "statutoryRequirements",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdBy": {
+          "name": "createdBy",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedBy": {
+          "name": "updatedBy",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "RetentionPolicy_tenant_object_uq": {
+          "name": "RetentionPolicy_tenant_object_uq",
+          "columns": [
+            "tenantId",
+            "objectType"
+          ],
+          "isUnique": true
+        },
+        "RetentionPolicy_tenant_data_class_idx": {
+          "name": "RetentionPolicy_tenant_data_class_idx",
+          "columns": [
+            "tenantId",
+            "dataClass"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "RetentionPolicy_tenantId_Tenant_id_fk": {
+          "name": "RetentionPolicy_tenantId_Tenant_id_fk",
+          "tableFrom": "RetentionPolicy",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "RetentionPolicy_id": {
+          "name": "RetentionPolicy_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "IncidentContainment": {
+      "name": "IncidentContainment",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "incidentId": {
+          "name": "incidentId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actionType": {
+          "name": "actionType",
+          "type": "enum('revoke_credential','disable_tool_provider','disable_tool','disable_route','withdraw_agent_revision','withdraw_runtime_revision','revoke_workload_token','isolate_environment','quarantine_event')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actionState": {
+          "name": "actionState",
+          "type": "enum('pending','applied','failed','reverted')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "evidenceRef": {
+          "name": "evidenceRef",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "targetRef": {
+          "name": "targetRef",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "detailsJson": {
+          "name": "detailsJson",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "failureReason": {
+          "name": "failureReason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "appliedAt": {
+          "name": "appliedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "revertedAt": {
+          "name": "revertedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "IncidentContainment_incident_action_uq": {
+          "name": "IncidentContainment_incident_action_uq",
+          "columns": [
+            "incidentId",
+            "actionType"
+          ],
+          "isUnique": true
+        },
+        "IncidentContainment_tenant_incident_idx": {
+          "name": "IncidentContainment_tenant_incident_idx",
+          "columns": [
+            "tenantId",
+            "incidentId"
+          ],
+          "isUnique": false
+        },
+        "IncidentContainment_incident_state_idx": {
+          "name": "IncidentContainment_incident_state_idx",
+          "columns": [
+            "incidentId",
+            "actionState"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "IncidentContainment_tenantId_Tenant_id_fk": {
+          "name": "IncidentContainment_tenantId_Tenant_id_fk",
+          "tableFrom": "IncidentContainment",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "IncidentContainment_incidentId_SecurityIncident_id_fk": {
+          "name": "IncidentContainment_incidentId_SecurityIncident_id_fk",
+          "tableFrom": "IncidentContainment",
+          "tableTo": "SecurityIncident",
+          "columnsFrom": [
+            "incidentId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "IncidentContainment_id": {
+          "name": "IncidentContainment_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "SecurityIncident": {
+      "name": "SecurityIncident",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "incidentKey": {
+          "name": "incidentKey",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "severity": {
+          "name": "severity",
+          "type": "enum('low','medium','high','critical')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "incidentState": {
+          "name": "incidentState",
+          "type": "enum('open','investigating','contained','resolved','escalated')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'open'"
+        },
+        "targetType": {
+          "name": "targetType",
+          "type": "enum('agent','agent_revision','tool_provider','tool','credential','runtime','environment','workload_token','other')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "targetId": {
+          "name": "targetId",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "detectedBy": {
+          "name": "detectedBy",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "detectedAt": {
+          "name": "detectedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "investigatingAt": {
+          "name": "investigatingAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "containedAt": {
+          "name": "containedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "resolvedAt": {
+          "name": "resolvedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "closedBy": {
+          "name": "closedBy",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "closureReason": {
+          "name": "closureReason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "containmentSummaryJson": {
+          "name": "containmentSummaryJson",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "auditEventId": {
+          "name": "auditEventId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "requestId": {
+          "name": "requestId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "SecurityIncident_tenant_key_uq": {
+          "name": "SecurityIncident_tenant_key_uq",
+          "columns": [
+            "tenantId",
+            "incidentKey"
+          ],
+          "isUnique": true
+        },
+        "SecurityIncident_tenant_state_idx": {
+          "name": "SecurityIncident_tenant_state_idx",
+          "columns": [
+            "tenantId",
+            "incidentState"
+          ],
+          "isUnique": false
+        },
+        "SecurityIncident_tenant_target_idx": {
+          "name": "SecurityIncident_tenant_target_idx",
+          "columns": [
+            "tenantId",
+            "targetType",
+            "targetId"
+          ],
+          "isUnique": false
+        },
+        "SecurityIncident_tenant_severity_idx": {
+          "name": "SecurityIncident_tenant_severity_idx",
+          "columns": [
+            "tenantId",
+            "severity"
+          ],
+          "isUnique": false
+        },
+        "SecurityIncident_tenant_detected_idx": {
+          "name": "SecurityIncident_tenant_detected_idx",
+          "columns": [
+            "tenantId",
+            "detectedAt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "SecurityIncident_tenantId_Tenant_id_fk": {
+          "name": "SecurityIncident_tenantId_Tenant_id_fk",
+          "tableFrom": "SecurityIncident",
+          "tableTo": "Tenant",
+          "columnsFrom": [
+            "tenantId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "SecurityIncident_id": {
+          "name": "SecurityIncident_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    }
+  },
+  "views": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {},
+    "indexes": {}
+  }
+}
