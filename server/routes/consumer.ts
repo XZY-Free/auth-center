@@ -9,6 +9,7 @@
  *   POST /api/authorize           实时授权（变更/敏感操作 100% 实时）
  *   GET  /api/directory/users/:id         用户目录单读（显示用）
  *   POST /api/directory/users/batch       用户目录批量读
+ *   POST /api/enterprise/user-context     企业用户上下文装配（agent 执行链，会话主体=目标用户）
  *
  * 凭证：`Authorization: Bearer <sessionToken>`（服务端调用）或 `nex_session`
  * cookie（浏览器/开发期共享 cookie）。auth-center 不可达时消费方对实时操作
@@ -18,8 +19,18 @@ import { db } from "@/lib/db/client";
 import { apiError, apiSuccess, getRequestId, resourceNotFound } from "@/lib/http";
 import { assertActionResourceTypeMatch, isKnownActionCode } from "@/lib/identity/action-codes";
 import type { ActionScopeRequest } from "@/lib/identity/authorization";
+import {
+  type EnterpriseUserAccessPolicy,
+  EnterpriseUserContextRequirementError,
+  parseEnterpriseUserAccessPolicy,
+} from "@/lib/identity/enterprise-user-access-policy";
+import { getIdentityExtensions } from "@/lib/identity/identity-extension-bootstrap";
 import { evaluatePermission, loadPermissionContext } from "@/lib/identity/permission-context";
 import { buildPermissionSnapshot } from "@/lib/identity/permission-snapshot";
+import {
+  type EnterpriseUserContextCandidate,
+  prepareEnterpriseUserContext,
+} from "@/lib/identity/prepare-enterprise-user-context";
 import {
   AuthenticationError,
   type Principal,
@@ -287,5 +298,112 @@ consumerRoutes.post(
         ),
       );
     return apiSuccess({ users: rows.map(directoryUser) });
+  }),
+);
+
+// ─── 企业用户上下文（执行链装配：nexharness agent 执行链经此消费）──────────
+
+/**
+ * 企业用户上下文装配（POST /api/enterprise/user-context）。
+ *
+ * 契约（消费方模型 v4）：nexharness 不再持有企业资料读写与刷新编排——执行链在
+ * 创建 AgentCall 前经本接口装配"企业用户上下文候选"：
+ * - 调用凭证 = 目标用户自己的会话（Bearer/cookie）；(tenantId, userIdentityId) 必须与主体一致。
+ * - profileRequirement=none → `{ candidate: null }`（调用方通常直接跳过本接口）。
+ * - 资料来源（EnterpriseProfileSource）由部署装配；开源部署无资料源时返回 409
+ *   ENTERPRISE_USER_CONTEXT_UNAVAILABLE（与既有"当前部署没有受信企业资料来源"一致）。
+ * - 候选含最终复核证据（evidence）；消费方在绑定创建事务内做本地终稿复核（纯函数，
+ *   无跨服务调用——见 nexharness `finalizeEnterpriseUserContextCandidate`）。
+ */
+const enterpriseUserContextSchema = z
+  .object({
+    tenantId: z.string().min(1).max(64),
+    userIdentityId: z.string().min(1).max(64),
+    profileRequirement: z.enum(["none", "stale_allowed", "fresh_required"]),
+    allowedFields: z.array(z.string().min(1).max(96)).max(64),
+    /** ISO 8601 绝对截止（可选）；缺失时服务端按 10s 本地上限保护。 */
+    deadlineAt: z.string().max(64).optional(),
+  })
+  .strict();
+
+/** 候选序列化：Date → ISO（消费方还原为 Date 后进本地复核）。 */
+function serializeEnterpriseCandidate(candidate: EnterpriseUserContextCandidate) {
+  return {
+    publicContext: candidate.publicContext,
+    evidence: {
+      ...candidate.evidence,
+      lastVerifiedAt: candidate.evidence.lastVerifiedAt.toISOString(),
+      freshUntil: candidate.evidence.freshUntil.toISOString(),
+      staleUntil: candidate.evidence.staleUntil.toISOString(),
+    },
+  };
+}
+
+consumerRoutes.post(
+  "/enterprise/user-context",
+  handleConsumer(async (c, requestId) => {
+    const session = await requireSession(c);
+    const parsed = enterpriseUserContextSchema.safeParse(await c.req.json().catch(() => null));
+    if (!parsed.success) {
+      return apiError("REQUEST_SCHEMA_INVALID", "企业上下文请求体无效", { requestId });
+    }
+    const { tenantId, userIdentityId, profileRequirement, allowedFields } = parsed.data;
+    if (
+      session.principal.tenantId !== tenantId ||
+      session.principal.userIdentityId !== userIdentityId
+    ) {
+      return apiError("ACCESS_DENIED", "调用主体与目标用户不一致", { requestId });
+    }
+    if (profileRequirement === "none") {
+      return apiSuccess({ candidate: null }, { headers: { "cache-control": "no-store" } });
+    }
+    let deadlineAt: Date | undefined;
+    if (parsed.data.deadlineAt !== undefined) {
+      const parsedDeadline = new Date(parsed.data.deadlineAt);
+      if (Number.isNaN(parsedDeadline.getTime())) {
+        return apiError("REQUEST_SCHEMA_INVALID", "deadlineAt 不是合法 ISO 时间", { requestId });
+      }
+      deadlineAt = parsedDeadline;
+    }
+    let policy: EnterpriseUserAccessPolicy;
+    try {
+      policy = parseEnterpriseUserAccessPolicy({
+        enterprise_user_context: {
+          profile_requirement: profileRequirement,
+          allowed_fields: allowedFields,
+        },
+      });
+    } catch (error) {
+      return apiError(
+        "REQUEST_SCHEMA_INVALID",
+        error instanceof Error ? error.message : "企业资料要求无效",
+        { requestId },
+      );
+    }
+    const extensions = await getIdentityExtensions();
+    try {
+      const candidate = await prepareEnterpriseUserContext({
+        tenantId,
+        userIdentityId,
+        policy,
+        source: extensions.profileSource,
+        deadlineAt,
+      });
+      return apiSuccess(
+        { candidate: candidate ? serializeEnterpriseCandidate(candidate) : null },
+        { headers: { "cache-control": "no-store" } },
+      );
+    } catch (error) {
+      if (error instanceof EnterpriseUserContextRequirementError) {
+        const codeByRequirement = {
+          enterprise_user_context_disabled: "ENTERPRISE_USER_CONTEXT_DISABLED",
+          enterprise_user_context_not_fresh: "ENTERPRISE_USER_CONTEXT_NOT_FRESH",
+          enterprise_user_context_unavailable: "ENTERPRISE_USER_CONTEXT_UNAVAILABLE",
+        } as const;
+        const code = codeByRequirement[error.code] ?? "ENTERPRISE_USER_CONTEXT_UNAVAILABLE";
+        return apiError(code, error.message, { requestId });
+      }
+      throw error;
+    }
   }),
 );

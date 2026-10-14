@@ -52,6 +52,12 @@ export const API_ERROR_CODES = {
   DELEGATION_DEPTH_EXCEEDED: { http: 422, retryable: false },
   DELEGATION_NOT_ALLOWED: { http: 403, retryable: false },
   DELETION_STEP_FAILED: { http: 503, retryable: true },
+  /** : 企业用户身份已停用，禁止企业资料访问。 */
+  ENTERPRISE_USER_CONTEXT_DISABLED: { http: 403, retryable: false },
+  /** : 企业资料不满足 fresh_required 要求。 */
+  ENTERPRISE_USER_CONTEXT_NOT_FRESH: { http: 409, retryable: false },
+  /** : 企业资料不可用（部署无受信资料源 / 资料缺失或过期 / 服务不可达）。 */
+  ENTERPRISE_USER_CONTEXT_UNAVAILABLE: { http: 409, retryable: true },
   ENVIRONMENT_CHANGE_NOT_SAFE: { http: 422, retryable: false },
   ETAG_MISMATCH: { http: 412, retryable: true },
   EGRESS_BLOCKED: { http: 422, retryable: false },

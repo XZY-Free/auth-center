@@ -10,9 +10,10 @@
  *  5. GET  /api/permissions/snapshot（Bearer）
  *  6. POST /api/authorize（studio.access @ tenant）
  *  7. GET  /api/directory/users/:id 与 POST /api/directory/users/batch
- *  8. POST /api/session/revoke → introspect 立即 401（撤销即时生效）
- *  9. GET  /api/auth/external-methods
- * 10. 票据一次性校验（二次兑换必须失败）
+ *  8. POST /api/enterprise/user-context（none→null / 无资料源 409 / 主体不匹配 403 / 非法字段 400 / 匿名 401）
+ *  9. POST /api/session/revoke → introspect 立即 401（撤销即时生效）
+ * 10. GET  /api/auth/external-methods
+ * 11. 票据一次性校验（二次兑换必须失败）
  *
  * 账号：SMOKE_ADMIN_ACCOUNT（默认 admin@nexharness.local）；
  * 密码：SMOKE_ADMIN_PASSWORD 或 ~/.config/nexharness/dev-admin-password.txt。
@@ -183,7 +184,73 @@ async function main(): Promise<void> {
   });
   expect(anonymous.status === 401, "无凭证目录读 → 401", anonymous.status);
 
-  console.log("[9] /api/auth/external-methods");
+  console.log("[9] /api/enterprise/user-context（会话主体=目标用户）");
+  const enterpriseNone = await call("/api/enterprise/user-context", {
+    method: "POST",
+    headers: { ...bearer, "content-type": "application/json" },
+    body: JSON.stringify({
+      tenantId: principal?.tenantId,
+      userIdentityId: principal?.userIdentityId,
+      profileRequirement: "none",
+      allowedFields: [],
+    }),
+  });
+  expect(
+    enterpriseNone.status === 200 && enterpriseNone.body?.candidate === null,
+    "none 要求 → candidate null",
+    enterpriseNone.body,
+  );
+  const enterpriseUnavailable = await call("/api/enterprise/user-context", {
+    method: "POST",
+    headers: { ...bearer, "content-type": "application/json" },
+    body: JSON.stringify({
+      tenantId: principal?.tenantId,
+      userIdentityId: principal?.userIdentityId,
+      profileRequirement: "stale_allowed",
+      allowedFields: [],
+    }),
+  });
+  expect(
+    enterpriseUnavailable.status === 409 &&
+      enterpriseUnavailable.body?.error?.code === "ENTERPRISE_USER_CONTEXT_UNAVAILABLE",
+    "开源部署无受信资料源 → 409 UNAVAILABLE（fail-closed）",
+    enterpriseUnavailable.body,
+  );
+  const enterpriseMismatch = await call("/api/enterprise/user-context", {
+    method: "POST",
+    headers: { ...bearer, "content-type": "application/json" },
+    body: JSON.stringify({
+      tenantId: principal?.tenantId,
+      userIdentityId: "another-user-id",
+      profileRequirement: "stale_allowed",
+      allowedFields: [],
+    }),
+  });
+  expect(enterpriseMismatch.status === 403, "主体不匹配 → 403", enterpriseMismatch.status);
+  const enterpriseInvalid = await call("/api/enterprise/user-context", {
+    method: "POST",
+    headers: { ...bearer, "content-type": "application/json" },
+    body: JSON.stringify({
+      tenantId: principal?.tenantId,
+      userIdentityId: principal?.userIdentityId,
+      profileRequirement: "fresh_required",
+      allowedFields: ["not_registered_field"],
+    }),
+  });
+  expect(enterpriseInvalid.status === 400, "未登记字段 → 400", enterpriseInvalid.body);
+  const enterpriseAnonymous = await call("/api/enterprise/user-context", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      tenantId: principal?.tenantId,
+      userIdentityId: principal?.userIdentityId,
+      profileRequirement: "none",
+      allowedFields: [],
+    }),
+  });
+  expect(enterpriseAnonymous.status === 401, "匿名调用 → 401", enterpriseAnonymous.status);
+
+  console.log("[10] /api/auth/external-methods");
   const external = await call("/api/auth/external-methods");
   expect(
     external.status === 200 && "external_auth" in (external.body ?? {}),
@@ -191,7 +258,7 @@ async function main(): Promise<void> {
     external.body,
   );
 
-  console.log("[10] /api/session/revoke → 撤销即时生效");
+  console.log("[11] /api/session/revoke → 撤销即时生效");
   const revoke = await call("/api/session/revoke", { method: "POST", headers: bearer });
   expect(revoke.status === 200 && revoke.body?.revoked === true, "revoke 成功", revoke.body);
   const afterRevoke = await call("/api/session/introspect", { method: "POST", headers: bearer });
