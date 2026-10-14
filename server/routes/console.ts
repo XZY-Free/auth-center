@@ -212,7 +212,9 @@ consoleRoutes.get("/agents/:id/access", async (c) => {
   return jsonOk({
     defaultMode: policies.find((p) => p.resourceType === "tenant")?.mode ?? "all",
     policy: policies.find((p) => p.resourceType === "agent") ?? {
-      mode: "restricted",
+      // 缺行 = 未配置 = 继承平台默认（与评测端缺行语义一致；稀疏策略语义，
+      // 消费方不再在资源创建时预写 inherit 行）。
+      mode: "inherit",
       principals: [],
       collaborators: [],
       version: 0,

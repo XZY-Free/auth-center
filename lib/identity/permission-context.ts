@@ -162,18 +162,22 @@ function evaluatePlatformPermission(
     const policy = context.policies.find(
       (p) => p.resourceType === "agent" && p.resourceId === request.resource.id,
     );
+    // 缺行 = 未配置 = 继承平台默认（稀疏策略语义：行为仅存"覆盖值"；
+    // nexharness 侧不再在资源创建时预写 inherit 行）。
+    const effectivePolicy = policy ?? { mode: "inherit", principals: [], collaborators: [] };
     if (
       request.actionCode === "agent.invoke" &&
       (!agent || agent.lifecycleState !== "enabled" || !agent.currentRevisionId)
     )
       return deny("智能体不存在或不属于当前租户");
-    if (request.actionCode === "agent.invoke" && policy) {
+    if (request.actionCode === "agent.invoke") {
       if (!agent || agent.lifecycleState !== "enabled" || !agent.currentRevisionId)
         return deny("智能体未启用或未发布");
       const defaultPolicy = context.policies.find(
         (p) => p.resourceType === "tenant" && p.resourceId === context.tenantId,
       );
-      const mode = policy.mode === "inherit" ? (defaultPolicy?.mode ?? "all") : policy.mode;
+      const mode =
+        effectivePolicy.mode === "inherit" ? (defaultPolicy?.mode ?? "all") : effectivePolicy.mode;
       if (mode === "roles")
         return grants.length
           ? {
@@ -184,8 +188,9 @@ function evaluatePlatformPermission(
           : deny("没有该智能体的角色授权");
       if (mode === "all")
         return { allowed: true, reason: "面向全体员工发布", sources: ["资产使用范围"] };
-      if (mode !== "restricted" || !Array.isArray(policy.principals)) return deny("使用范围无效");
-      const matches = policy.principals.some(
+      if (mode !== "restricted" || !Array.isArray(effectivePolicy.principals))
+        return deny("使用范围无效");
+      const matches = effectivePolicy.principals.some(
         (id) => typeof id === "string" && context.principalIds.has(id),
       );
       return matches
