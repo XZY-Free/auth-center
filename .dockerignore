@@ -1,0 +1,16 @@
+# 构建镜像时排除的内容（Dockerfile context 内不进 builder 层）
+node_modules
+web/dist
+tmp
+
+# 密钥与本地配置
+.env
+.env.*
+!.env.example
+
+# 本地与系统
+.git
+.DS_Store
+*.log
+*.tsbuildinfo
+.playwright-mcp
