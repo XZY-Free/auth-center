@@ -1,16 +1,29 @@
 /**
- * auth-center 门户（骨架）。
- * 登录门户 / 设置密码 / 管理台在阶段②步骤 2 随移植挂载（react-router）。
+ * auth-center 门户（react-router）。
+ *
+ * 路由：
+ * - /login            登录门户（本地登录 + 外部认证区）
+ * - /setup-password   首次设密
+ * - /                 门户首页（控制台占位；管理台后续挂载）
+ * - *                 兜底回登录页
  */
+import { BrandProvider } from "@/components/brand/brand-provider";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { HomePage } from "./pages/home-page";
+import { LoginPage } from "./pages/login-page";
+import { SetupPasswordPage } from "./pages/setup-password-page";
+
 export function App() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-neutral-950 text-neutral-100">
-      <div className="text-center">
-        <h1 className="text-2xl font-semibold">NexHarness 身份中心</h1>
-        <p className="mt-2 text-sm text-neutral-400">
-          auth-center · 骨架运行中（登录门户移植进行中）
-        </p>
-      </div>
-    </main>
+    <BrowserRouter>
+      <BrandProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/setup-password" element={<SetupPasswordPage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </BrandProvider>
+    </BrowserRouter>
   );
 }

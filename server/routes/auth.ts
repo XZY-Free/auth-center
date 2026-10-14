@@ -21,12 +21,19 @@ import { apiError, apiSuccess, getRequestId } from "@/lib/http";
 import { getIdentityExtensions } from "@/lib/identity/identity-extension-bootstrap";
 import {
   PasswordEnrollmentError,
+  SESSION_COOKIE_NAME,
   completePasswordEnrollment,
   establishExternalSession,
+  getPasswordEnrollment,
   localAuthenticationProvider,
 } from "@/lib/identity/local-authentication";
 import { PASSWORD_MAX_LENGTH, isPasswordAcceptable } from "@/lib/identity/password-strength";
-import { acceptAuthenticatedEvidence, authErrorResponse } from "@/lib/identity/resolver";
+import {
+  AuthenticationError,
+  acceptAuthenticatedEvidence,
+  authErrorResponse,
+  resolvePrincipal,
+} from "@/lib/identity/resolver";
 import {
   type ReturnTarget,
   isSameOriginBrowserRequest,
@@ -56,6 +63,8 @@ const AUTH_OPERATIONS = [
   "setup-password",
   "logout",
   "external-methods",
+  "password-enrollment",
+  "ticket",
 ] as const;
 type AuthOperation = (typeof AUTH_OPERATIONS)[number];
 
@@ -133,6 +142,53 @@ async function dispatch(
         headers: { "cache-control": "no-store" },
       },
     );
+  }
+
+  if (operation === "password-enrollment") {
+    if (method !== "GET") {
+      return apiError("REQUEST_SCHEMA_INVALID", "password-enrollment 只支持 GET", { requestId });
+    }
+    const enrollment = await getPasswordEnrollment({ headers: c.req.raw.headers });
+    if (!enrollment) {
+      return apiError("AUTHENTICATION_REQUIRED", "首次设密会话不存在或已失效", { requestId });
+    }
+    return apiSuccess(
+      { enrollment: { account: enrollment.account, displayName: enrollment.displayName } },
+      { headers: { "cache-control": "no-store" } },
+    );
+  }
+
+  if (operation === "ticket") {
+    // 已登录会话的"回跳续期"：外部回跳签发新票据（消费方换会话），
+    // 站内相对路径直接 302。未登录 → 302 回登录页（客户端会再确认并渲染表单）。
+    if (method !== "GET") {
+      return apiError("REQUEST_SCHEMA_INVALID", "ticket 只支持 GET", { requestId });
+    }
+    const target = resolveReturnTarget(c.req.query("returnTo"), allowedOrigins);
+    if (target.kind === "invalid") {
+      return apiError("REQUEST_SCHEMA_INVALID", "returnTo 不在允许的回跳名单中", { requestId });
+    }
+    const token = readCookie(c.req.raw.headers, SESSION_COOKIE_NAME);
+    let authenticated = false;
+    if (token) {
+      try {
+        await resolvePrincipal(c.req.raw.headers);
+        authenticated = true;
+      } catch (error) {
+        if (!(error instanceof AuthenticationError)) throw error;
+      }
+    }
+    if (!authenticated || !token) {
+      const back = `${publicOrigin(c)}/login?returnTo=${encodeURIComponent(
+        c.req.query("returnTo") ?? "/",
+      )}`;
+      return new Response(null, { status: 302, headers: { location: back } });
+    }
+    const destination =
+      target.kind === "relative"
+        ? `${publicOrigin(c)}${target.path}`
+        : withTicket(target.url, issueTicket({ sessionToken: token, returnTo: target.url }));
+    return new Response(null, { status: 302, headers: { location: destination } });
   }
 
   if (operation === "sso") {

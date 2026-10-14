@@ -49,8 +49,33 @@
 - **坑（已避开）**：`@hono/node-server` 会把全局 `Response` 替换为自身包装类（`_Response`），对原生实例做 `instanceof Response` 恒为 false → 路由层禁止用 `instanceof Response` 判型（改用异常路径）。
 - 生产模式伺服 web/dist（SPA fallback）；开发模式只有 API（门户走 vite :3101 代理）。
 
+## 门户 UI（步骤 1 第三轮，2026-10-14）
+
+**结构**：组件置于仓库根 `components/`（与 nexharness 同构，`@/components/*` 零改导入）。
+
+| 文件/目录 | 内容 |
+|---|---|
+| components/ui/{button,input,label}.tsx | 从 nexharness 复制（@base-ui/react 原语；依赖新增 `@base-ui/react@^1.6.0`） |
+| components/auth/*（5 件） | 登录屏 / 表单 / 外部认证区 / 设密屏 / 布局：复制 + 去 `"use client"` + 登录响应优先 `redirect_to`（票据回跳） |
+| components/brand/{brand-provider,brand-wordmark}.tsx | wordmark 复制；provider **简化为静态品牌**（DEFAULT_BRAND）——不引入 nexharness 的品牌存储与 SSE 热更新 |
+| lib/branding/{brand-contract,brand-presentation}.ts | 复制（零副作用纯函数） |
+| web/src/pages/{login,setup-password,home}-page.tsx | react-router 页面：登录页（会话探测 → 自动续跳 `/api/auth/ticket`；否则渲染表单） |
+| web/src/styles.css | 语义 token 体系从 nexharness `app/globals.css` 提取（:root/.dark/@theme inline/@layer base）；`@source` 显式声明根级 `components/` 扫描范围 |
+| scripts/port-portal.py | 本轮移植脚本（记录用） |
+
+**新增服务端点（配合门户）**：
+- `GET /api/auth/password-enrollment`：设密会话查询（设密页渲染用；无会话 401）。
+- `GET /api/auth/ticket?returnTo=`：已登录会话的"回跳续期"——外部地址签发**新一次性票据** 302，站内相对路径直接 302；未登录 302 回登录页（客户端再确认）。
+
+**坑（已修复）**：
+- vite 代理默认把 Host 改写为上游地址 → API 侧 `publicOrigin` 用内部 Host 拼出 `http://127.0.0.1:3100/...` 的跳转。修复：代理显式转发原始 Host（`changeOrigin: false` + `x-forwarded-host`），与生产 nginx 语义一致。
+- Tailwind v4 自动源扫描不覆盖 `web/` 之外的 `components/` → 组件类不生成（布局崩坏）。修复：`@source "../../components/**/*.{ts,tsx}"`。
+
+**验证**：typecheck ✓ lint ✓ build ✓；浏览器全链路冒烟 9/9（真实 Chromium：匿名→表单→登录→消费者回跳携带票据→服务端兑换→会话续跳新票据→门户首页）。
+
 ## 后续步骤（阶段②）
 
 1. ~~路由移植~~ ✅ 已完成（2026-10-14，冒烟 29/29）。
-2. 门户/管理台 UI 移植（web/：react-router + 组件逐件）。
-3. 冒烟：登录全链路（浏览器） + 管理台 + 治理入口。
+2. ~~门户 UI（登录/设密/首页）~~ ✅ 已完成（2026-10-14，浏览器冒烟 9/9）。
+3. 管理台移植（studio settings 的用户/角色/权限子块 + agent 访问管理）与治理入口。
+4. Nexharness 侧消费化改造（步骤 2 主体：identity-client + 读路径收敛）。

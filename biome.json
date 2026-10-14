@@ -13,5 +13,17 @@
   },
   "files": {
     "ignore": ["node_modules/**", "dist/**", "web/dist/**", "drizzle/**", "web/src/vite-env.d.ts"]
-  }
+  },
+  "overrides": [
+    {
+      "include": ["components/ui/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noLabelWithoutControl": "off"
+          }
+        }
+      }
+    }
+  ]
 }
