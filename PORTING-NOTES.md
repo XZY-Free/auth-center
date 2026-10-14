@@ -73,9 +73,30 @@
 
 **验证**：typecheck ✓ lint ✓ build ✓；浏览器全链路冒烟 9/9（真实 Chromium：匿名→表单→登录→消费者回跳携带票据→服务端兑换→会话续跳新票据→门户首页）。
 
+## 管理台（步骤 1 第四轮，2026-10-14）
+
+**结构**：控制台组件置于根 `components/studio/`、UI 基础件扩至 `components/ui/`。
+
+| 文件/目录 | 内容 |
+|---|---|
+| lib/identity/studio-access.ts | 守卫适配层（requireStudioAction / hasStudioAction / hasStudioActionInAnyScope），零改复制 |
+| components/ui/{checkbox,dialog,select,tabs}.tsx | 复制（@base-ui/react 原语；依赖新增 devDeps `tw-animate-css`、`shadcn`，styles.css 增两条 `@import`） |
+| components/studio/{permission-manager,permission-subject-picker,agent-access-manager}.tsx | 复制 + 去 "use client" + 接口前缀 `/studio/api/...` → `/api/console/...`（组件仅改 URL 常量） |
+| components/studio/{studio-page,studio-settings-section,gate-page,appearance-setting}.tsx | 复制；gate-page / settings-section 的 next/link → react-router Link |
+| server/routes/console.ts（新写） | 管理台 API（Hono）：settings/users、settings/users/:id/roles、settings/permissions（GET/POST/explain）、agents 列表、agents/:id/access（GET/PUT）；**沿用 `{ok,data}` 信封**（jsonOk/jsonError）与组件消费方式一致 |
+| web/src/pages/console/*（新写） | 控制台壳（顶栏导航）+ 设置页 + 智能体列表页 + 单智能体访问页；守卫：401→登录页、403→GatePage |
+| web/index.html | 新增主题初始化内联脚本（nex-theme 约定，防暗色闪白） |
+
+**适配说明**：
+- 原 Next 服务端页级守卫（requireStudioPagePermission）→ SPA 客户端取数 + 接口侧守卫（服务端才是权威）。
+- 智能体访问入口：源为 studio 内嵌（路径带 agent id）→ auth-center 控制台新增 `GET /api/console/agents` 列表页做入口。
+- 治理面（deletion/retention/legal-hold/incident）为纯 API（无 UI），随步骤 2 主体一并接线。
+
+**验证**：typecheck ✓ lint ✓ build ✓；管理台浏览器冒烟 10/10（真实 Chromium：登录回跳 → 设置页渲染（成员/角色/外观）→ 智能体列表 → 访问设置选择并保存成功 → 匿名接口 401）。冒烟用测试智能体 `console-smoke-agent`（dev 库，可删）。
+
 ## 后续步骤（阶段②）
 
 1. ~~路由移植~~ ✅ 已完成（2026-10-14，冒烟 29/29）。
 2. ~~门户 UI（登录/设密/首页）~~ ✅ 已完成（2026-10-14，浏览器冒烟 9/9）。
-3. 管理台移植（studio settings 的用户/角色/权限子块 + agent 访问管理）与治理入口。
-4. Nexharness 侧消费化改造（步骤 2 主体：identity-client + 读路径收敛）。
+3. ~~管理台（成员与权限 + 智能体访问）~~ ✅ 已完成（2026-10-14，浏览器冒烟 10/10）。
+4. **nexharness 侧消费化改造**（步骤 2 主体：identity-client + 读路径收敛）；治理 API 接线随行。

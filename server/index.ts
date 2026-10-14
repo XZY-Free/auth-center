@@ -18,6 +18,7 @@ async function main(): Promise<void> {
   const { logger } = await import("@/lib/logger");
   const { authRoutes } = await import("@/server/routes/auth");
   const { consumerRoutes } = await import("@/server/routes/consumer");
+  const { consoleRoutes } = await import("@/server/routes/console");
 
   const app = new Hono();
 
@@ -29,6 +30,8 @@ async function main(): Promise<void> {
   app.route("/api/auth", authRoutes);
   // 消费方接口：/api/session/*、/api/permissions/snapshot、/api/authorize、/api/directory/*
   app.route("/api", consumerRoutes);
+  // 管理台接口：/api/console/settings/*、/api/console/agents/*
+  app.route("/api/console", consoleRoutes);
 
   if (resolveAppEnv() === "production") {
     // 生产：同源伺服门户与静态资产（构建产物见 web/dist）。

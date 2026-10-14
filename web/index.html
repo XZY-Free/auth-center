@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NexHarness 身份中心</title>
+    <script>
+      // 主题初始化（AppearanceSetting 的 nex-theme 约定）：首屏渲染前套用，
+      // 避免暗色偏好用户的闪白。跟随系统时实时响应系统偏好。
+      (function () {
+        try {
+          var stored = localStorage.getItem("nex-theme");
+          var isDark =
+            stored === "dark" ||
+            (stored !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.classList.add(isDark ? "dark" : "light");
+        } catch (error) {
+          /* localStorage 不可用时回落浅色。 */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

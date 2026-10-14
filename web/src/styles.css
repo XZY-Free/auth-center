@@ -1,8 +1,10 @@
 /* auth-center 门户样式：
  * 语义 token 体系从 nexharness app/globals.css 提取（:root 浅色 + .dark 暗色
  * + @theme inline 映射 + @layer base），保持与平台一致的视觉基线。
- * 未引入 tw-animate-css / shadcn 变体工具（门户未使用其特性）。 */
+ * 引入 tw-animate-css（动画工具类）与 shadcn/tailwind.css（data-* 变体）——管理台组件需要。 */
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 

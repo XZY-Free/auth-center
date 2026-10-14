@@ -1,14 +1,14 @@
 /**
- * 门户首页（控制台占位）。
+ * 门户首页。
  *
  * - 未登录 → 回登录页。
- * - 已登录 → 显示当前身份 + 退出入口；管理台（用户/角色/权限/治理）
- *   在其移植完成后挂载到本路由。
+ * - 已登录 → 显示当前身份 + 管理台入口 + 退出登录。
  */
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api-fetch";
+import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 
 interface PrincipalView {
   readonly displayName?: string | null;
@@ -63,21 +63,23 @@ export function HomePage() {
             已登录：{principal?.displayName ?? principal?.email ?? "当前用户"}
           </p>
         </div>
-        <div className="rounded-xl border border-border-strong px-4 py-3 text-sm text-muted-foreground">
-          管理台（用户 / 角色 / 权限 / 生命周期治理）正在移植中。
+        <div className="flex flex-wrap items-center gap-3">
+          <Link to="/console" className={cn(buttonVariants(), "h-9 rounded-[10px]")}>
+            进入管理台
+          </Link>
+          <Button
+            variant="outline"
+            className="h-9 rounded-[10px]"
+            disabled={loggingOut}
+            onClick={async () => {
+              setLoggingOut(true);
+              await apiFetch("/api/auth/logout", { method: "POST" }).catch(() => null);
+              window.location.assign("/login");
+            }}
+          >
+            {loggingOut ? "正在退出…" : "退出登录"}
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          className="h-9 rounded-[10px]"
-          disabled={loggingOut}
-          onClick={async () => {
-            setLoggingOut(true);
-            await apiFetch("/api/auth/logout", { method: "POST" }).catch(() => null);
-            window.location.assign("/login");
-          }}
-        >
-          {loggingOut ? "正在退出…" : "退出登录"}
-        </Button>
       </section>
     </main>
   );
