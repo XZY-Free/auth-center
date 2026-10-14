@@ -22,10 +22,16 @@ pnpm dev:web         # Vite 门户 dev server
 pnpm typecheck && pnpm lint && pnpm build
 
 # 数据库（19 表）
-pnpm db:generate     # 生成迁移（drizzle/）
-pnpm db:migrate      # 应用迁移（读取 .env.{APP_ENV} 的 DATABASE_URL）
-pnpm db:seed         # 默认租户 + 默认身份（幂等）
+pnpm db:generate           # 生成迁移（drizzle/）
+pnpm db:migrate            # 应用迁移（读取 .env.{APP_ENV} 的 DATABASE_URL）
+pnpm db:seed               # 默认租户（幂等）
+
+# 管理员引导（dev 环境；密码文件需 0600；env 变量 NEX_BOOTSTRAP_ADMIN_{EMAIL,NAME,PASSWORD_FILE}）
+pnpm auth:bootstrap-admin
 ```
+
+> 建库顺序（与 nexharness 同库部署时）：本仓 `db:migrate` **先于** nexharness 迁移——nexharness 的
+> 116 表外键引用 Tenant / UserIdentity / PrincipalBinding（本仓创建）。
 
 环境变量：见 `.env.example`；本地覆盖写 `.env.development.local`（git 忽略）。
 

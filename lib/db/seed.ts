@@ -77,24 +77,4 @@ export async function seedDefaultGrants(
     .values({ tenantId, principalId: principalBindingId, roleKey: "admin", source: "local" });
 }
 
-// ─── CLI runner（pnpm db:seed → tsx lib/db/seed.ts）─────────
-
-async function main() {
-  console.log("[seed] 开始正式 schema seed...");
-  const tenant = await ensureDefaultTenant();
-  console.log(`[seed] 默认租户就绪：tenant=${tenant.id}`);
-
-  // 专题01 §15：不创建默认 Agent（Agent 空表合法）。基础 Harness Runtime 走正式控制面初始化。
-  // 用户和权限只能通过 auth:bootstrap-admin 显式创建，seed 不再制造可登录的默认身份。
-  console.log("[seed] 正式 schema seed 完成（未创建默认用户）");
-  process.exit(0);
-}
-
-// 直接运行时执行；被 import（单测）时不自动跑。
-// 用 typeof require 守卫，CJS / ESM 加载器下都安全。
-if (typeof require !== "undefined" && typeof module !== "undefined" && require.main === module) {
-  main().catch((error) => {
-    console.error("[seed] 失败：", error);
-    process.exit(1);
-  });
-}
+// ─── CLI 入口：scripts/seed.ts（pnpm db:seed；动态 import 规避 env 加载时机）───

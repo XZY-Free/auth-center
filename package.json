@@ -14,8 +14,9 @@
     "lint:fix": "biome check --write .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx lib/db/seed.ts",
-    "start": "tsx server/index.ts"
+    "db:seed": "tsx scripts/seed.ts",
+    "start": "tsx server/index.ts",
+    "auth:bootstrap-admin": "tsx scripts/bootstrap-admin.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

@@ -94,9 +94,22 @@
 
 **验证**：typecheck ✓ lint ✓ build ✓；管理台浏览器冒烟 10/10（真实 Chromium：登录回跳 → 设置页渲染（成员/角色/外观）→ 智能体列表 → 访问设置选择并保存成功 → 匿名接口 401）。冒烟用测试智能体 `console-smoke-agent`（dev 库，可删）。
 
+## 消费化配套（步骤 2 第二轮联动，2026-10-14）
+
+| 文件 | 内容 |
+|---|---|
+| scripts/bootstrap-admin.ts（新） | 管理员引导（自 nexharness 的已删脚本接棒）：校验密码文件权限（0600）→ `bootstrapLocalAdmin`（用户身份 + 登录凭证 + 主体绑定 + admin 角色分配）；`pnpm auth:bootstrap-admin`，env 变量沿用 `NEX_BOOTSTRAP_ADMIN_*` |
+| scripts/seed.ts（新） | seed CLI 拆出（`pnpm db:seed`）：loadEnvFiles → ensureDefaultTenant（默认租户，幂等）；lib/db/seed.ts 退化纯库模块（helpers + 注释） |
+| lib/db/seed.ts | 移除 CLI runner（静态 import 的 db 会在 env 加载前初始化——时机坑，见下） |
+
+**约束（脚本文件）**：凡直跑脚本（非 server 进程）——db client / 身份模块必须 **`loadEnvFiles()` 之后动态 import**；
+静态 import 会在 env 装载前读取空 `DATABASE_URL`，产生"连错库/空连接"类诡异的查询失败（与 server/index.ts
+的延迟加载同因）。serve 进程（`pnpm start`）自身已加载 env，不受影响。
+
 ## 后续步骤（阶段②）
 
 1. ~~路由移植~~ ✅ 已完成（2026-10-14，冒烟 29/29）。
 2. ~~门户 UI（登录/设密/首页）~~ ✅ 已完成（2026-10-14，浏览器冒烟 9/9）。
 3. ~~管理台（成员与权限 + 智能体访问）~~ ✅ 已完成（2026-10-14，浏览器冒烟 10/10）。
-4. **nexharness 侧消费化改造**（步骤 2 主体：identity-client + 读路径收敛）；治理 API 接线随行。
+4. ~~nexharness 侧消费化改造第一轮/第二轮~~ ✅（消费方模型落地；dev 库按 19+116 口径重建）。
+5. **nexharness 执行链消费化（第三轮）与收尾**：企业链内核消费点切换、治理 API 对接（deletion/retention/legal-hold/incident 的 nexharness 管理入口评估）。
